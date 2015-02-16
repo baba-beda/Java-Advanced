@@ -1,6 +1,8 @@
 package ru.ifmo.ctddev.zenkova.walk;
 
 import java.io.*;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -20,12 +22,16 @@ public class Walk {
              String aux;
 
              while ((aux = reader.readLine()) != null) {
-                 Path file = Paths.get(aux);
                  int hash = 0;
-                 try {
-                     hash = fnvHash(new InputStreamReader(Files.newInputStream(file)));
-                 } catch (IOException e) {
+
+                 try (FileChannel channel = new FileInputStream(aux).getChannel()) {
+                     MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
+                     hash = fnvHash(byteBuffer);
+
+                     System.gc();
+                 } catch (Exception e) {
                  }
+
                  writer.write(((hash == 0) ? "00000000" : Integer.toHexString(hash)) + " " + aux + System.getProperty("line.separator"));
                  writer.flush();
              }
@@ -39,7 +45,7 @@ public class Walk {
         }
     }
 
-    public static int fnvHash(InputStreamReader reader) {
+    private static int fnvHash(MappedByteBuffer buffer) {
         final int OFFSET_BASIS = 0x811c9dc5;
         final int FNV_PRIME = 0x01000193;
 
@@ -47,12 +53,13 @@ public class Walk {
 
         try {
             int aux;
-            while ((aux = reader.read()) >= 0) {
+            while (buffer.hasRemaining()) {
+                aux = buffer.get();
                 hVal *= FNV_PRIME;
                 hVal ^= aux;
             }
             return hVal;
-        } catch (IOException e) {
+        } catch (Exception e) {
             return 0;
         }
     }
