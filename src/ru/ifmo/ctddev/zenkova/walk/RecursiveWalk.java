@@ -48,7 +48,7 @@ public class RecursiveWalk {
         try {
             int aux;
             while (buffer.hasRemaining()) {
-                aux = buffer.get();
+                aux = buffer.get() & 0xff;
                 hVal *= FNV_PRIME;
                 hVal ^= aux;
             }
@@ -65,12 +65,10 @@ public class RecursiveWalk {
             try (FileChannel channel = new FileInputStream(file.toFile()).getChannel()) {
                 MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
                 hash = fnvHash(byteBuffer);
-
-                System.gc();
             } catch (Exception e) {
             }
 
-            writer.write(((hash == 0) ? "00000000" : Integer.toHexString(hash)) + " " + file.toString() + System.getProperty("line.separator"));
+            writer.write(String.format("%08x", hash) + " " + file.toString() + System.getProperty("line.separator"));
             writer.flush();
 
         } catch (IOException e) {

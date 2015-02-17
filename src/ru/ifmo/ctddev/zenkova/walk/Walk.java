@@ -27,12 +27,10 @@ public class Walk {
                  try (FileChannel channel = new FileInputStream(aux).getChannel()) {
                      MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
                      hash = fnvHash(byteBuffer);
-
-                     System.gc();
                  } catch (Exception e) {
                  }
 
-                 writer.write(((hash == 0) ? "00000000" : Integer.toHexString(hash)) + " " + aux + System.getProperty("line.separator"));
+                 writer.write(String.format("%08x", hash) + " " + aux + System.getProperty("line.separator"));
                  writer.flush();
              }
 
@@ -54,7 +52,7 @@ public class Walk {
         try {
             int aux;
             while (buffer.hasRemaining()) {
-                aux = buffer.get();
+                aux = buffer.get() & 0xff;
                 hVal *= FNV_PRIME;
                 hVal ^= aux;
             }
