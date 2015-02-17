@@ -9,7 +9,7 @@ import java.nio.file.*;
 /**
  * Created by daria on 16.02.15.
  */
-public class WalkElite {
+public class RecursiveWalk {
 
     public static void main(String[] args) {
         Path input = Paths.get(args[0]);
