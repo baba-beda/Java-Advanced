@@ -2,6 +2,8 @@
 *.iml
 .idea/
 
+__Test__Walk__/
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 

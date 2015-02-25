@@ -1,7 +1,7 @@
 package ru.ifmo.ctddev.zenkova.walk;
 
 import java.io.*;
-import java.nio.MappedByteBuffer;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -12,6 +12,11 @@ import java.nio.file.*;
 public class RecursiveWalk {
 
     public static void main(String[] args) {
+
+        if (args.length < 2 || args[0] == null || args[1] == null) {
+            System.err.println("Not enough arguments or they're invalid");
+            return;
+        }
         Path input = Paths.get(args[0]);
         Path output = Paths.get(args[1]);
 
@@ -21,51 +26,47 @@ public class RecursiveWalk {
             String aux;
 
             while ((aux = reader.readLine()) != null) {
-                Path path = Paths.get(aux);
-                if (Files.isDirectory(path)) {
-                    readDirectory(path, writer);
-                }
-                else {
-                    readFile(path, writer);
-                }
+                visit(writer, Paths.get(aux));
             }
 
-        } catch (NoSuchFileException e) {
-            System.err.println("File " + "\"" + args[0] + "\"" + " not found");
         } catch (UnsupportedEncodingException e) {
             System.err.println("Input file's encoding is not UTF-8, check it and try again");
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            System.err.println("Invalid input");
         }
     }
 
-    private static int fnvHash(MappedByteBuffer buffer) {
+
+    private static int fnvHash(FileChannel channel) throws IOException {
         final int OFFSET_BASIS = 0x811c9dc5;
         final int FNV_PRIME = 0x01000193;
+        final int PAGE_SIZE = 1024 * 128;
 
         int hVal = OFFSET_BASIS;
 
-        try {
+        ByteBuffer buffer = ByteBuffer.allocate(PAGE_SIZE);
+
+        while (-1 != channel.read(buffer)) {
+            buffer.flip();
+
             int aux;
             while (buffer.hasRemaining()) {
                 aux = buffer.get() & 0xff;
                 hVal *= FNV_PRIME;
                 hVal ^= aux;
             }
-            return hVal;
-        } catch (Exception e) {
-            return 0;
+
+            buffer.clear();
         }
+        return hVal;
     }
 
     private static void readFile(Path file, BufferedWriter writer) {
         try {
             int hash = 0;
-
             try (FileChannel channel = new FileInputStream(file.toFile()).getChannel()) {
-                MappedByteBuffer byteBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size());
-                hash = fnvHash(byteBuffer);
-            } catch (Exception e) {
+                hash = fnvHash(channel);
+            } catch (IOException e) {
             }
 
             writer.write(String.format("%08x", hash) + " " + file.toString() + System.getProperty("line.separator"));
@@ -80,15 +81,18 @@ public class RecursiveWalk {
         try {
             DirectoryStream<Path> stream = Files.newDirectoryStream(directory);
             for (Path file : stream) {
-                if (Files.isDirectory(file)) {
-                    readDirectory(file, writer);
-                }
-                else {
-                    readFile(file, writer);
-                }
+                visit(writer, file);
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());
+        }
+    }
+
+    private static void visit(BufferedWriter writer, Path file) {
+        if (Files.isDirectory(file)) {
+            readDirectory(file, writer);
+        } else {
+            readFile(file, writer);
         }
     }
 }
