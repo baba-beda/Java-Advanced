@@ -25,8 +25,9 @@ public class ArraySet<E extends Comparable> implements SortedSet<E> {
         constructorHelper(collection);
     }
 
-    private ArraySet(List<E> list, boolean sorted) {
+    private ArraySet(List<E> list, boolean sorted, Comparator<E> comparator) {
         if (sorted) {
+            eComparator = comparator;
             eList = list;
         }
     }
@@ -59,21 +60,25 @@ public class ArraySet<E extends Comparable> implements SortedSet<E> {
         int fromPos = findPosition(fromElement);
         int toPos = findPosition(toElement);
 
-        return new ArraySet<>(eList.subList(fromPos, toPos), true);
+        return subSet(fromPos, toPos);
     }
 
     @Override
     public SortedSet<E> headSet(E toElement) {
         int toPos = findPosition(toElement);
 
-        return new ArraySet<>(eList.subList(0, toPos), true);
+        return subSet(0, toPos);
     }
 
     @Override
     public SortedSet<E> tailSet(E fromElement) {
         int fromPos = findPosition(fromElement);
 
-        return new ArraySet<>(eList.subList(fromPos, size()), true);
+        return subSet(fromPos, size());
+    }
+
+    private SortedSet<E> subSet(int fromPos, int toPos) {
+        return new ArraySet<>(eList.subList(fromPos, toPos), true, eComparator);
     }
 
     private int findPosition(E element) {
