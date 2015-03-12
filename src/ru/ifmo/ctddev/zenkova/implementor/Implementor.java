@@ -26,7 +26,7 @@ import java.util.zip.ZipEntry;
 
 public class Implementor implements JarImpler {
     /**
-     * {@link Set} with full descriptions of all methods of the class
+     * Set with full descriptions of all methods of the class
      */
     private static Set<String> methodNames = new HashSet<>();
 
