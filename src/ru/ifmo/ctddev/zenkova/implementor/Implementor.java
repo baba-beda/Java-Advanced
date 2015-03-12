@@ -32,7 +32,7 @@ public class Implementor implements JarImpler {
      * @param method an instance of Method
      * @return description of <code>method</code>
      */
-    public static String getMethod(Method method) {
+    private static String getMethod(Method method) {
         return modifiersToString(method.getModifiers()) + method.getReturnType().getCanonicalName() + " " +
                 method.getName() + "(" + getParams(method) + ")" + " {\n\t\t" + getDefaultReturnValue(method) + "\n\t}";
     }
@@ -43,7 +43,7 @@ public class Implementor implements JarImpler {
      * @param mod a modifier constant
      * @return String <code>modifier</code> according to <code>mod</code>
      */
-    public static String modifiersToString(int mod) {
+    private static String modifiersToString(int mod) {
 
         String modifier = Modifier.toString(mod & ((Modifier.ABSTRACT | Modifier.TRANSIENT) ^ Integer.MAX_VALUE));
         if (modifier.length() > 0) {
@@ -58,7 +58,7 @@ public class Implementor implements JarImpler {
      * @param method an instance of Method
      * @return parameters in String
      */
-    public static String getParams(Method method) {
+    private static String getParams(Method method) {
         StringBuilder builder = new StringBuilder();
         for (Parameter p : method.getParameters()) {
             builder.append(getParam(p)).append(", ");
@@ -76,7 +76,7 @@ public class Implementor implements JarImpler {
      * @param parameter of a method
      * @return description of the <code>parameter</code>
      */
-    public static String getParam(Parameter parameter) {
+    private static String getParam(Parameter parameter) {
         return modifiersToString(parameter.getModifiers()) + parameter.getType().getCanonicalName() + " " + parameter.getName();
     }
 
@@ -86,7 +86,7 @@ public class Implementor implements JarImpler {
      * @param method an instance of Method
      * @return String with correct default return value
      */
-    public static String getDefaultReturnValue(Method method) {
+    private static String getDefaultReturnValue(Method method) {
         if (method.getReturnType().isPrimitive()) {
             if (method.getReturnType().equals(void.class)) {
                 return "";
