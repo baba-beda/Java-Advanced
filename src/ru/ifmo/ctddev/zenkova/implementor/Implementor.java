@@ -1,6 +1,5 @@
 package ru.ifmo.ctddev.zenkova.implementor;
 
-import info.kgeorgiy.java.advanced.implementor.Impler;
 import info.kgeorgiy.java.advanced.implementor.ImplerException;
 import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
@@ -23,8 +22,15 @@ import java.util.Set;
  */
 
 public class Implementor implements JarImpler {
-    static Set<String> methodNames = new HashSet<>();
-    String fileDir;
+    /**
+     * Set with full descriptions of all methods of the class
+     */
+    private static Set<String> methodNames = new HashSet<>();
+
+    /**
+     * String, that stores path to destination file
+     */
+    private String fileDir;
 
     /**
      * Converts Method to String, that contains full description of the method with modifiers, return type and parameters
@@ -99,7 +105,12 @@ public class Implementor implements JarImpler {
         return "return null;";
     }
 
-
+    /**
+     * Creates class, that implements interface token
+     * @param token class file that contains interface
+     * @param root name of file
+     * @throws ImplerException special 
+     */
     @Override
     public void implement(Class<?> token, File root) throws ImplerException {
         if (token.isPrimitive()) {
@@ -145,6 +156,12 @@ public class Implementor implements JarImpler {
 
     }
 
+    /**
+     * Creates jar with class, that implements interface token
+     * @param aClass class file that contains interface
+     * @param file name of file
+     * @throws ImplerException
+     */
     @Override
     public void implementJar(Class<?> aClass, File file) throws ImplerException {
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();

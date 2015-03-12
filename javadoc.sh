@@ -1,2 +1,2 @@
 #!/bin/sh
-javadoc -classpath lib/* -sourcepath src/ -d Documentation/ ru.ifmo.ctddev.zenkova.implementor
+javadoc -classpath artifacts/*:lib/* -sourcepath src/ -d Documentation/ ru.ifmo.ctddev.zenkova.implementor
