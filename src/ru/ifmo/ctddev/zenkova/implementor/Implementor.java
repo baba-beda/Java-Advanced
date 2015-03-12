@@ -5,9 +5,7 @@ import info.kgeorgiy.java.advanced.implementor.JarImpler;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -15,7 +13,12 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
+import java.util.zip.ZipEntry;
 
 /**
  * Created by daria on 03.03.15.
@@ -23,7 +26,7 @@ import java.util.Set;
 
 public class Implementor implements JarImpler {
     /**
-     * Set with full descriptions of all methods of the class
+     * {@link Set} with full descriptions of all methods of the class
      */
     private static Set<String> methodNames = new HashSet<>();
 
@@ -157,17 +160,107 @@ public class Implementor implements JarImpler {
     }
 
     /**
-     * Creates jar with class, that implements interface token
-     * @param aClass class file that contains interface
-     * @param file name of file
-     * @throws ImplerException special wrapping for all thrown exceptions
+     * Implements a class with given token in a jar form
+     *
+     * @param token type token to create implementation for.
+     * @param jarFile target <tt>.jar</tt> file.
+     * @throws ImplerException describing the error
      */
-    @Override
-    public void implementJar(Class<?> aClass, File file) throws ImplerException {
+    public void implementJar(Class<?> token, File jarFile) throws ImplerException {
+        if (token == null) {
+            throw new NullPointerException("token is null!");
+        }
+        if (jarFile == null) {
+            throw new NullPointerException("jarFile is null!");
+        }
+
+        File workingDir = new File(".");
+        try {
+            workingDir = Files.createTempDirectory("ImplTemp").toFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        implement(token, workingDir);
+        String path;
+        if (token.getPackage() != null) {
+            path = token.getPackage().getName().replace(".", File.separator) + File.separator;
+        } else {
+            path = File.separator;
+        }
+        String name;
+        if (token.getPackage() != null) {
+            name = token.getPackage().getName() + ".";
+        } else {
+            name = ".";
+        }
+        int mam = compile(workingDir, workingDir.getAbsolutePath() +  File.separator + path + token.getSimpleName() + "Impl.java");
+        System.out.println("# " + mam + "\n" + jarFile.getName() + "\n");
+        createJar(name + token.getSimpleName() + "Impl", jarFile.getAbsolutePath(), path + token.getSimpleName() + "Impl.class", workingDir.getAbsolutePath());
+    }
+
+    /**
+     * Compiles target file
+     *
+     * @param root file path
+     * @param file file name
+     * @return the exit code given by the compiler
+     */
+    private int compile(final File root, String file) {
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        ArrayList<String> args = new ArrayList<>();
-        implement(aClass, file);
-        args.add(fileDir);
-        final int exitCode = compiler.run(null, null, null, fileDir + aClass.getSimpleName() + "Impl.java");
+        final List<String> args = new ArrayList<>();
+        args.add(file);
+        args.add("-cp");
+        args.add(root.getPath() + File.pathSeparator + System.getProperty("java.class.path"));
+        return compiler.run(null, null, null, args.toArray(new String[args.size()]));
+    }
+
+    /**
+     * Creates a jar archive
+     *
+     * @param fullName full name
+     * @param jarName archive name
+     * @param filePath file path
+     * @param workingDir working directory
+     */
+
+    private static void createJar(String fullName, String jarName, String filePath, String workingDir) {
+        System.out.println(fullName + "\n" + jarName + "\n" + filePath);
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        //manifest.getMainAttributes().put(Attributes.Name.MAIN_CLASS, fullName);
+        try (JarOutputStream jarOutputStream = new JarOutputStream(new FileOutputStream(jarName), manifest);
+             FileInputStream fileInputStream = new FileInputStream(workingDir + File.separator + filePath)) {
+
+            jarOutputStream.putNextEntry(new ZipEntry(filePath));
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = fileInputStream.read(buffer)) > 0) {
+                jarOutputStream.write(buffer, 0, length);
+            }
+            jarOutputStream.closeEntry();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * An entry point necessary to compile our jar archive
+     *
+     * @param args default args of any main
+     */
+    public static void main(String[] args) {
+        if (args == null || args.length == 0 || args[0] == null) {
+            throw new IllegalArgumentException("Not enough arguments!");
+        }
+        Class<?> clazz;
+        try {
+            clazz = Class.forName(args[0]);
+            (new Implementor()).implementJar(clazz, new File("./out.jar"));
+        } catch (ClassNotFoundException e) {
+            System.err.println(e.toString());
+        } catch (ImplerException e) {
+            e.printStackTrace();
+        }
     }
 }
