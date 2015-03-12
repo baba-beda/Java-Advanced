@@ -109,7 +109,7 @@ public class Implementor implements JarImpler {
      * Creates class, that implements interface token
      * @param token class file that contains interface
      * @param root name of file
-     * @throws ImplerException special 
+     * @throws ImplerException special wrapping for all thrown exceptions
      */
     @Override
     public void implement(Class<?> token, File root) throws ImplerException {
@@ -160,7 +160,7 @@ public class Implementor implements JarImpler {
      * Creates jar with class, that implements interface token
      * @param aClass class file that contains interface
      * @param file name of file
-     * @throws ImplerException
+     * @throws ImplerException special wrapping for all thrown exceptions
      */
     @Override
     public void implementJar(Class<?> aClass, File file) throws ImplerException {
