@@ -250,17 +250,25 @@ public class Implementor implements JarImpler {
      * @param args default args of any main
      */
     public static void main(String[] args) {
-        if (args == null || args.length == 0 || args[0] == null) {
-            throw new IllegalArgumentException("Not enough arguments!");
+        if (args.length < 2) {
+            System.out.println("wrong args");
+            return;
         }
-        Class<?> clazz;
         try {
-            clazz = Class.forName(args[0]);
-            (new Implementor()).implementJar(clazz, new File("./out.jar"));
+            String name = args[0];
+            String filename = args[1];
+            File root = new File(filename);
+            Class<?> token = Class.forName(name);
+            Implementor implementor = new Implementor();
+            if ((args.length >= 3) && (args[2].equals("jar"))) {
+                implementor.implementJar(token, root);
+            } else {
+                implementor.implement(token, root);
+            }
         } catch (ClassNotFoundException e) {
-            System.err.println(e.toString());
+            System.out.println("Class not found");
         } catch (ImplerException e) {
-            e.printStackTrace();
+            System.out.println("Some error");
         }
     }
 }
