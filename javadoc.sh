@@ -1,2 +1,2 @@
 #!/bin/sh
-    javadoc -classpath artifacts/*:lib/* -sourcepath src/ -d Documentation/ -linkoffline http://java.sun.com/javase/7/docs/api/ http://java.sun.com/javase/7/docs/api/  -private ru.ifmo.ctddev.zenkova.implementor info.kgeorgiy.java.advanced.implementor
+        javadoc -classpath artifacts/*:lib/* -sourcepath src/ -d Documentation/ -linkoffline https://docs.oracle.com/javase/8/docs/api/ https://docs.oracle.com/javase/8/docs/api/  -private ru.ifmo.ctddev.zenkova.implementor ru.ifmo.ctddev.zenkova.concurrent  ru.ifmo.ctddev.zenkova.mapper info.kgeorgiy.java.advanced.implementor info.kgeorgiy.java.advanced.concurrent info.kgeorgiy.java.advanced.mapper info.kgeorgiy.java.advanced.crawler
